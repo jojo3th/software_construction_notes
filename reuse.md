@@ -44,7 +44,7 @@
 
 ##### **Composition: 更强的association，但难以变化**
 
-Composition是Association的一种特殊类型，其中Delegation关系通过类内 部field初始化建立起来，无法修改。已经给你指定运行类型了
+Composition是Association的一种特殊类型，其中Delegation关系通过类内部field初始化建立起来，无法修改。已经给你指定运行类型了
 
 <img src="C:\Users\xunhi\AppData\Roaming\Typora\typora-user-images\image-20230524213425432.png" alt="image-20230524213425432" style="zoom:50%;" />
 

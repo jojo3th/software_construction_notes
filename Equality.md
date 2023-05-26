@@ -36,7 +36,7 @@ equals 对象等价性
 public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof 原类)) return false;
-    将o转为原类;
+    将o强转为原类;
     自己的判断;
 }
 ```

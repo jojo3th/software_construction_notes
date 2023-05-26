@@ -239,3 +239,227 @@ public class Student {
 
 ### Template Method
 
+模板方法设计模式的核心是一个抽象类，**它定义了一个算法的骨架，将一些步骤延迟到子类中实现**。这个抽象类包含一个或多个抽象方法，这些方法由子类实现，以便在不改变算法结构的情况下重新定义算法的某些步骤。这个抽象类还可以包含具体方法，这些方法在算法中的多个步骤中都使用到了，但是可以被子类重写。
+
+```java
+// 抽象类
+abstract class Character {
+    // 算法骨架
+    public void attack() {
+        System.out.println("准备攻击");
+        System.out.println("使用 " + getWeapon() + " 攻击");
+        System.out.println("攻击完成");
+    }
+	// protected作用范围：同一个包，不同包的子孙类可不可以用要说明
+    // 算法的一部分
+    protected abstract String getWeapon();
+}
+
+// 实现算法的一部分
+class Warrior extends Character {
+    @Override
+    protected String getWeapon() {
+        return "剑";
+    }
+}
+
+// 实现算法的一部分
+class Wizard extends Character {
+    @Override
+    protected String getWeapon() {
+        return "魔杖";
+    }
+}
+
+// 客户端
+public class Game {
+    public static void main(String[] args) {
+        Character warrior = new Warrior();
+        Character wizard = new Wizard();
+
+        warrior.attack();
+        wizard.attack();
+    }
+}
+```
+
+### Iterator
+
+将要遍历的集合类实现Iterable接口，表示这个集合类可以遍历，然后再实现Iterator类即可
+
+```java
+package basic_datastruct;
+
+import java.util.Arrays;
+import java.util.Iterator;
+
+@SuppressWarnings({"all"})
+public class DynamicArray<Item> implements Iterable<Item> {
+    private int capacity;
+    private Item[] array;
+    private static final int DEFAULT_CAPACITY = 1;
+
+    private void resize(int newCapacity) {
+        array = Arrays.copyOf(array, newCapacity);
+    }
+
+    public DynamicArray() {
+        array = (Item[])new Object[DynamicArray.DEFAULT_CAPACITY];
+        capacity = 0;
+    }
+
+    public void add(Item item) {
+        if (capacity == array.length) {
+            resize(2 * array.length);
+        }
+        array[capacity++] = item;
+    }
+
+    public Item remove() {
+        if (capacity > 0 && capacity <= array.length / 4) {
+            resize(array.length / 2);
+        }
+        array[capacity - 1] = null;
+        return array[--capacity];
+    }
+
+    public boolean isEmpty() {
+        return capacity == 0;
+    }
+
+    public int size() {
+        return capacity;
+    }
+
+    // 通过delegation来使用迭代器
+    @Override
+    public Iterator<Item> iterator() {
+        return new DynamicArrayIterator();
+    }
+
+    // 自己的Iterator
+    private class DynamicArrayIterator implements Iterator<Item> {
+        private int n = capacity;
+
+        @Override
+        public boolean hasNext() {
+            return n != 0;
+        }
+
+        @Override
+        public Item next() {
+            return array[--n];
+        }
+
+        @Override
+        public void remove() {
+
+        }
+    }
+}
+```
+
+### visitor
+
+访问者模式的核心是将操作封装在访问者对象中，从而使得您可以在不修改现有对象结构的情况下定义新的操作。访问者模式通过将操作和对象结构分离，从而使得您可以在不修改对象结构的情况下添加新的操作，从而使得代码更加灵活和可扩展。
+
+在访问者模式中，有四个核心元素：抽象元素、具体元素、抽象访问者和具体访问者。抽象元素定义了一个accept()方法，该方法接受一个访问者对象，并调用访问者对象的visit()方法；具体元素扩展自抽象元素，并实现了accept()方法。抽象访问者定义了visit()方法的声明；具体访问者扩展自抽象访问者，并实现了visit()方法。
+
+访问者模式的核心思想是将操作和对象结构分离，从而使得您可以在不修改对象结构的情况下添加新的操作。这使得访问者模式成为一种非常有用的设计模式，特别是在需要对现有对象结构进行复杂操作的情况下。
+
+```java
+// 抽象元素
+interface Shape {
+    // 接受visitor
+    void accept(Visitor visitor);
+    double getArea();
+}
+
+// 具体元素
+class Circle implements Shape {
+    private double radius;
+
+    public Circle(double radius) {
+        this.radius = radius;
+    }
+
+    public void accept(Visitor visitor) {
+        visitor.visitCircle(this);
+    }
+
+    public double getArea() {
+        return Math.PI * radius * radius;
+    }
+
+    public double getPerimeter() {
+        return 2 * Math.PI * radius;
+    }
+}
+
+// 具体元素
+class Rectangle implements Shape {
+    private double width;
+    private double height;
+
+    public Rectangle(double width, double height) {
+        this.width = width;
+        this.height = height;
+    }
+
+    public void accept(Visitor visitor) {
+        visitor.visitRectangle(this);
+    }
+
+    public double getArea() {
+        return width * height;
+    }
+
+    public double getPerimeter() {
+        return 2 * (width + height);
+    }
+}
+
+// 抽象访问者
+interface Visitor {
+    void visitCircle(Circle circle);
+    void visitRectangle(Rectangle rectangle);
+}
+
+// 具体访问者
+class AreaVisitor implements Visitor {
+    private double totalArea = 0;
+
+    public void visitCircle(Circle circle) {
+        totalArea += circle.getArea();
+    }
+
+    public void visitRectangle(Rectangle rectangle) {
+        totalArea += rectangle.getArea();
+    }
+
+    public double getTotalArea() {
+        return totalArea;
+    }
+}
+
+// client
+public class GraphicsApp {
+    public static void main(String[] args) {
+        Shape[] shapes = new Shape[2];
+        shapes[0] = new Circle(5);
+        shapes[1] = new Rectangle(3, 4);
+
+        AreaVisitor areaVisitor = new AreaVisitor();
+
+        for (Shape shape : shapes) {
+            shape.accept(areaVisitor);
+        }
+
+        System.out.println("总面积：" + areaVisitor.getTotalArea());
+    }
+}
+```
+
+<img src="C:\Users\xunhi\AppData\Roaming\Typora\typora-user-images\image-20230526213749029.png" alt="image-20230526213749029" style="zoom:50%;" />
+
+总结：Strategy主要适用于ADT内部函数的切换，Visitor主要是为了扩展ADT
